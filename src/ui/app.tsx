@@ -14,7 +14,7 @@ function App() {
   const [count, setCount] = useState(0);
   const [pingCount, setPingCount] = useState(0);
   const [selectedNodes, setSelectedNodes] = useState<DetailedNodeInfo[]>([]);
-
+  const [svgString, setSvgString] = useState<string | undefined>(undefined);
   useEffect(() => {
     console.log("selectedNodes", selectedNodes);
   }, [selectedNodes]);
@@ -26,6 +26,10 @@ function App() {
 
     UI_CHANNEL.subscribe("selectionChange", (nodeInfos: DetailedNodeInfo[]) => {
       setSelectedNodes(nodeInfos);
+    });
+
+    UI_CHANNEL.subscribe("svgPreview", (svgString: string) => {
+      setSvgString(svgString);
     });
   }, []);
 
@@ -54,10 +58,22 @@ function App() {
     );
   };
 
+  function renderSvgPreview(svgString: string | undefined) {
+    if (!svgString) return null;
+
+    return (
+      <div dangerouslySetInnerHTML={{ __html: svgString }} />
+    );
+  }
+
   return (
     <div className="homepage">
       <div style={{ marginTop: '20px', textAlign: 'left' }}>
         {renderSelectionInfo()}
+      </div>
+      <div>
+        <h3>SVG Preview</h3>
+        {renderSvgPreview(svgString)}
       </div>
     </div>
   );

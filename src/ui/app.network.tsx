@@ -5,6 +5,7 @@ type UIChannelEvents = {
   hello: [message: string[]];
   ping: [];
   selectionChange: [nodeInfos: DetailedNodeInfo[]];
+  svgPreview: [svgString: string];
 };
 
 export type DetailedNodeInfo = {
@@ -52,5 +53,8 @@ UI_CHANNEL.registerMessageHandler("hello", (text: string) => {
   console.log("Plugin side said", text);
 });
 UI_CHANNEL.registerMessageHandler("selectionChange", (nodeInfos: DetailedNodeInfo[]) => {
+  // 空の実装で問題ありません
+});
+UI_CHANNEL.registerMessageHandler("svgPreview", (svgString: string) => {
   // 空の実装で問題ありません
 });

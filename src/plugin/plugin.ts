@@ -78,6 +78,13 @@ async function bootstrap() {
     const nodes: DetailedNodeInfo[] = figma.currentPage.selection.map(getDetailedNodeInfo);
     PLUGIN_CHANNEL.emit(UI, "selectionChange", [nodes]);
   });
+
+  figma.on("selectionchange", async () => {
+    const nodes = figma.currentPage.selection;
+    if (nodes.length === 0) return;
+    const svgString = await nodes[0].exportAsync({ format: 'SVG_STRING' });
+    PLUGIN_CHANNEL.emit(UI, "svgPreview", [svgString]);
+  });
 }
 
 bootstrap();

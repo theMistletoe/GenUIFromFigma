@@ -45,3 +45,6 @@ PLUGIN_CHANNEL.registerMessageHandler("createRect", (width, height) => {
 PLUGIN_CHANNEL.registerMessageHandler("selectionChange", (nodeInfos: DetailedNodeInfo[]) => {
   return nodeInfos;
 });
+PLUGIN_CHANNEL.registerMessageHandler("svgPreview", (svgString: string) => {
+  return svgString;
+});
