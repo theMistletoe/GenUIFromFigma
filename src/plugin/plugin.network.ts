@@ -1,4 +1,5 @@
 import { PLUGIN, UI } from "@common/networkSides";
+import { DetailedNodeInfo } from "@ui/app.network";
 
 export const PLUGIN_CHANNEL = PLUGIN.channelBuilder()
   .emitsTo(UI, (message) => {
@@ -40,4 +41,7 @@ PLUGIN_CHANNEL.registerMessageHandler("createRect", (width, height) => {
     figma.viewport.scrollAndZoomIntoView([rect]);
     figma.closePlugin();
   }
+});
+PLUGIN_CHANNEL.registerMessageHandler("selectionChange", (nodeInfos: DetailedNodeInfo[]) => {
+  return nodeInfos;
 });

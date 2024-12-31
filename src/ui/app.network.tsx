@@ -1,4 +1,33 @@
 import { PLUGIN, UI } from "@common/networkSides";
+import { Networker } from "monorepo-networker";
+
+type UIChannelEvents = {
+  hello: [message: string[]];
+  ping: [];
+  selectionChange: [nodeInfos: DetailedNodeInfo[]];
+};
+
+export type DetailedNodeInfo = {
+  id: string;
+  name: string;
+  type: string;
+  visible: boolean;
+  locked: boolean;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  fills?: readonly Paint[] | symbol;
+  strokes?: readonly Paint[] | symbol;
+  strokeWeight?: number | symbol;
+  cornerRadius?: number | symbol;
+  characters?: string;
+  fontSize?: number | symbol;
+  fontName?: FontName | symbol;
+  children?: DetailedNodeInfo[];
+};
 
 export const UI_CHANNEL = UI.channelBuilder()
   .emitsTo(PLUGIN, (message) => {
@@ -9,7 +38,6 @@ export const UI_CHANNEL = UI.channelBuilder()
       if (event.data?.pluginId == null) return;
       next(event.data.pluginMessage);
     };
-
     window.addEventListener("message", listener);
     return () => window.removeEventListener("message", listener);
   })
@@ -20,6 +48,9 @@ export const UI_CHANNEL = UI.channelBuilder()
 UI_CHANNEL.registerMessageHandler("ping", () => {
   return "pong";
 });
-UI_CHANNEL.registerMessageHandler("hello", (text) => {
+UI_CHANNEL.registerMessageHandler("hello", (text: string) => {
   console.log("Plugin side said", text);
+});
+UI_CHANNEL.registerMessageHandler("selectionChange", (nodeInfos: DetailedNodeInfo[]) => {
+  // 空の実装で問題ありません
 });
