@@ -23,12 +23,29 @@ export type DetailedNodeInfo = {
   fills?: readonly Paint[] | symbol;
   strokes?: readonly Paint[] | symbol;
   strokeWeight?: number | symbol;
+  strokeAlign?: string | symbol;
   cornerRadius?: number | symbol;
   characters?: string;
   fontSize?: number | symbol;
   fontName?: FontName | symbol;
   children?: DetailedNodeInfo[];
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+  itemSpacing?: number;
+  primaryAxisAlignItems?: string;
+  counterAxisAlignItems?: string;
+  blendMode?: string;
 };
+
+interface Paint {
+  type: string;
+  color?: {
+    toString(): string;
+  };
+}
 
 export const UI_CHANNEL = UI.channelBuilder()
   .emitsTo(PLUGIN, (message) => {

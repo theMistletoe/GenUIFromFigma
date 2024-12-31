@@ -39,6 +39,18 @@ async function bootstrap() {
       height: node.height,
       rotation: 'rotation' in node ? node.rotation : 0,
       opacity: 'opacity' in node ? node.opacity : 1,
+      strokeAlign: 'strokeAlign' in node ? node.strokeAlign : 'center',
+      strokeWeight: 'strokeWeight' in node ? node.strokeWeight : 0,
+      cornerRadius: 'cornerRadius' in node ? node.cornerRadius : 0,
+      paddingTop: 'paddingTop' in node ? node.paddingTop : 0,
+      paddingRight: 'paddingRight' in node ? node.paddingRight : 0,
+      paddingBottom: 'paddingBottom' in node ? node.paddingBottom : 0,
+      paddingLeft: 'paddingLeft' in node ? node.paddingLeft : 0,
+      layoutMode: 'layoutMode' in node ? node.layoutMode : 'HORIZONTAL',
+      itemSpacing: 'itemSpacing' in node ? node.itemSpacing : 0,
+      primaryAxisAlignItems: 'primaryAxisAlignItems' in node ? node.primaryAxisAlignItems : 'flex-start',
+      counterAxisAlignItems: 'counterAxisAlignItems' in node ? node.counterAxisAlignItems : 'flex-start',
+      blendMode: 'blendMode' in node ? node.blendMode : 'normal',
     };
 
     // 子要素を持つノードタイプの場合、再帰的に情報を取得

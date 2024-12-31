@@ -11,7 +11,7 @@ import viteLogo from "@ui/assets/vite.svg?url";
 import "@ui/styles/main.scss";
 
 interface StyleNode {
-  styles: Record<string, string | number>;
+  styles: Record<string, string | number | undefined>;
   svg?: string;
   children?: StyleNode[];
   content?: string;
@@ -92,17 +92,56 @@ export default ${componentName};`;
         styles: {
           width: `${node.width}px`,
           height: `${node.height}px`,
-          backgroundColor: (typeof node.fills !== 'symbol' && node.fills?.[0]?.type === 'SOLID' && node.fills[0].color?.toString()) || 'transparent',
           position: 'relative',
-          ...(typeof node.strokes !== 'symbol' && node.strokes && node.strokes.length > 0 && node.strokeWeight && node.strokes[0].type === 'SOLID' && {
-            border: `${String(node.strokeWeight)}px solid ${node.strokes[0].color?.toString()}`
+          // 背景色の処理を改善
+          backgroundColor: (typeof node.fills !== 'symbol' && node.fills?.[0]?.type === 'SOLID' && node.fills[0].color?.toString()) || 'transparent',
+          // 不透明度の追加
+          opacity: typeof node.opacity !== 'symbol' ? node.opacity : 1,
+          // 回転の追加
+          transform: typeof node.rotation !== 'symbol' ? `rotate(${node.rotation}deg)` : 'none',
+          // ボーダーの処理を改善
+          ...(typeof node.strokes !== 'symbol' && node.strokes && node.strokes.length > 0 && node.strokeWeight && {
+            border: `${String(node.strokeWeight)}px ${String(node.strokeAlign) || 'center'} ${node.strokes[0].color?.toString()}`,
           }),
+          // 角丸の処理を改善
           ...(node.cornerRadius && typeof node.cornerRadius !== 'symbol' && {
-            borderRadius: `${String(node.cornerRadius)}px`
-          })
+            borderRadius: Array.isArray(node.cornerRadius) 
+              ? `${node.cornerRadius.join('px ')}px`
+              : `${String(node.cornerRadius)}px`
+          }),
+          // パディングの追加
+          ...(node.paddingTop && { paddingTop: `${node.paddingTop}px` }),
+          ...(node.paddingRight && { paddingRight: `${node.paddingRight}px` }),
+          ...(node.paddingBottom && { paddingBottom: `${node.paddingBottom}px` }),
+          ...(node.paddingLeft && { paddingLeft: `${node.paddingLeft}px` }),
+          // 配置関連のスタイル
+          ...(node.layoutMode && {
+            display: 'flex',
+            flexDirection: node.layoutMode === 'HORIZONTAL' ? 'row' : 'column',
+            gap: node.itemSpacing ? `${node.itemSpacing}px` : '0',
+            justifyContent: node.primaryAxisAlignItems || 'flex-start',
+            alignItems: node.counterAxisAlignItems || 'flex-start',
+          }),
+          // ブレンドモードの追加
+          mixBlendMode: node.blendMode?.toLowerCase() || 'normal',
+          // 表示・非表示の制御
+          display: node.visible === false ? 'none' : 'block',
         },
         type: node.type
       };
+
+      // テキストノードの処理を追加
+      if (node.type === 'TEXT' && node.characters) {
+        styleNode.content = node.characters;
+        // テキストのスタイルを追加
+        styleNode.styles = {
+          ...styleNode.styles,
+          fontSize: typeof node.fontSize !== 'symbol' && node.fontSize ? `${String(node.fontSize)}px` : 'inherit',
+          fontFamily: typeof node.fontName !== 'symbol' && node.fontName ? String(node.fontName) : 'inherit',
+          fontWeight: 'normal',
+          color: typeof node.fills !== 'symbol' && node.fills?.[0]?.type === 'SOLID' ? node.fills[0].color?.toString() : 'inherit',
+        };
+      }
 
       // SVGプレビューが利用可能な場合
       if (svgString && node.type === 'VECTOR') {
