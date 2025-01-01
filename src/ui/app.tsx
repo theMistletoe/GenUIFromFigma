@@ -206,20 +206,21 @@ export default ${componentName};`;
     UI_CHANNEL.request(PLUGIN, "saveOpenAIToken", [openAIToken]);
   };
 
-  function generateReactComponentByAI() {
+  async function generateReactComponentByAI() {
     if (!openAIToken) return window.alert("OpenAI API Tokenが設定されていません。");
     if (!componentName) return window.alert("コンポーネント名が設定されていません。");
+    
     setIsGenerating(true);
     try {
-      fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${openAIToken}`,
-      },
-      body: JSON.stringify({
-        model: "o1-preview",
-        messages: [{ role: "user", content: `
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openAIToken}`,
+        },
+        body: JSON.stringify({
+          model: "o1-preview",
+          messages: [{ role: "user", content: `
 # 要望
 
 - FigmaでデザインしたコンポーネントをReact/TypeScriptでそのまま利用できる動作するコードを出力してください。
@@ -255,25 +256,16 @@ ${JSON.stringify(selectedNodes, null, 2)}
 - 結果については生成したコード部分のみを出力してください。\`\`\`などのコードブロックは出力しないでください。これは絶対です。
 
           ` }],
-      }),
-    }).then((response) => {
-      response.json().then((data) => {
-        console.log("data", data);
-        setGeneratedComponentByAI(data.choices[0].message.content);
+        }),
       });
-    });
+
+      const data = await response.json();
+      setGeneratedComponentByAI(data.choices[0].message.content);
     } catch (error) {
       console.error("Error generating component by AI", error);
     } finally {
       setIsGenerating(false);
     }
-
-// 以下の情報もプロンプトに入れてたけど、精度がいまいちなのでやめた
-// ## モックアップコード
-// \`\`\`tsx
-// ${generateSampleComponent(selectedNodes[0])}
-// \`\`\`
-
   }
 
   return (
