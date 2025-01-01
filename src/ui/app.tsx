@@ -203,6 +203,26 @@ export default ${componentName};`;
     UI_CHANNEL.request(PLUGIN, "saveOpenAIToken", [openAIToken]);
   };
 
+  function generateReactComponentByAI() {
+    if (!openAIToken) return;
+    fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openAIToken}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: "Say this is a test" }],
+      }),
+    }).then((response) => {
+      response.json().then((data) => {
+        console.log("data", data);
+      });
+    });
+
+  }
+
   return (
     <div className="homepage">
 
@@ -225,6 +245,10 @@ export default ${componentName};`;
       <div>
         <h3>SVG Preview</h3>
         {renderSvgPreview(svgString)}
+      </div>
+      <div>
+        <h3>生成したReactコンポーネント</h3>
+        <button onClick={generateReactComponentByAI}>生成</button>
       </div>
     </div>
   );
