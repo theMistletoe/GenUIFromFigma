@@ -90,7 +90,6 @@ export default ${componentName};`;
     const convertNodeToStyleNode = (node: DetailedNodeInfo): StyleNode => {
       // CSSプロパティをReactスタイルに変換する関数
       const convertCssToReactStyle = (cssProps: Record<string, string | number>) => {
-        console.log("cssProps", cssProps);
         return Object.entries(cssProps).reduce((acc, [key, value]) => {
           const reactKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
           
