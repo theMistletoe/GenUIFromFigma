@@ -14,7 +14,7 @@ export type DetailedNodeInfo = {
   opacity: number;
   characters?: string;
   children?: DetailedNodeInfo[];
-  cssInfos?: Record<string, string | number>;
+  cssInfos?: Record<string, string | number> | undefined;
   fills?: readonly Paint[] | symbol;
   strokes?: readonly Paint[] | symbol;
   strokeWeight?: number | symbol;
@@ -22,7 +22,7 @@ export type DetailedNodeInfo = {
   cornerRadius?: number | symbol;
   fontSize?: number | symbol;
   fontName?: FontName | symbol;
-  svg?: string;
+  svg?: string | undefined;
 };
 
 export const UI_CHANNEL = UI.channelBuilder()
