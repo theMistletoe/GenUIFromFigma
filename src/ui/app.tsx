@@ -1,12 +1,5 @@
-import { PLUGIN } from "@common/networkSides";
 import { DetailedNodeInfo, UI_CHANNEL } from "@ui/app.network";
-import { Button } from "@ui/components/Button";
-import { Networker } from "monorepo-networker";
 import { useEffect, useState } from "react";
-
-import figmaLogo from "@ui/assets/figma.png";
-import ReactLogo from "@ui/assets/react.svg?component";
-import viteLogo from "@ui/assets/vite.svg?url";
 
 import "@ui/styles/main.scss";
 
@@ -19,8 +12,7 @@ interface StyleNode {
 }
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [pingCount, setPingCount] = useState(0);
+
   const [selectedNodes, setSelectedNodes] = useState<DetailedNodeInfo[]>([]);
   const [svgString, setSvgString] = useState<string | undefined>(undefined);
   useEffect(() => {
@@ -28,9 +20,6 @@ function App() {
   }, [selectedNodes]);
 
   useEffect(() => {
-    UI_CHANNEL.subscribe("ping", () => {
-      setPingCount((cnt) => cnt + 1);
-    });
 
     UI_CHANNEL.subscribe("selectionChange", (nodeInfos: DetailedNodeInfo[]) => {
       setSelectedNodes(nodeInfos);

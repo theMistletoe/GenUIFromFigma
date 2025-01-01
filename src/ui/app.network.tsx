@@ -1,12 +1,4 @@
 import { PLUGIN, UI } from "@common/networkSides";
-import { Networker } from "monorepo-networker";
-
-type UIChannelEvents = {
-  hello: [message: string[]];
-  ping: [];
-  selectionChange: [nodeInfos: DetailedNodeInfo[]];
-  svgPreview: [svgString: string];
-};
 
 export type DetailedNodeInfo = {
   id: string;
