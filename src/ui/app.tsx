@@ -16,6 +16,9 @@ function App() {
   const [svgString, setSvgString] = useState<string | undefined>(undefined);
   const [componentName, setComponentName] = useState<string | undefined>(undefined);
   const [openAIToken, setOpenAIToken] = useState<string | undefined>(undefined);
+  const [generatedComponentByAI, setGeneratedComponentByAI] = useState<string | undefined>(undefined);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+
 
   useEffect(() => {
 
@@ -204,22 +207,72 @@ export default ${componentName};`;
   };
 
   function generateReactComponentByAI() {
-    if (!openAIToken) return;
-    fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
+    if (!openAIToken) return window.alert("OpenAI API Tokenが設定されていません。");
+    if (!componentName) return window.alert("コンポーネント名が設定されていません。");
+    setIsGenerating(true);
+    try {
+      fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${openAIToken}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: "Say this is a test" }],
+        model: "o1-preview",
+        messages: [{ role: "user", content: `
+# 要望
+
+- FigmaでデザインしたコンポーネントをReact/TypeScriptでそのまま利用できる動作するコードを出力してください。
+
+# 要求詳細
+
+Figmaから出力した情報を以下の通り提示します。
+
+## 作成したいコンポーネント
+
+
+${componentName}
+
+
+## デザイン・見た目
+
+\`\`\`svg
+${svgString}
+\`\`\`
+
+
+## 構成ノード情報
+
+\`\`\`json
+${JSON.stringify(selectedNodes, null, 2)}
+\`\`\`
+
+# 制約
+
+- 出力するコードにはTailwindCSSなどのcssライブラリを使用しないでください。
+- 出力するコードにはReact/TypeScriptのみを使用してください。
+- 出力するコードはsvgによる見た目、及び提供する構成ノード情報のcssInfosを分析しながら、正確にデザインを再現してください。
+- 結果については生成したコード部分のみを出力してください。\`\`\`などのコードブロックは出力しないでください。これは絶対です。
+
+          ` }],
       }),
     }).then((response) => {
       response.json().then((data) => {
         console.log("data", data);
+        setGeneratedComponentByAI(data.choices[0].message.content);
       });
     });
+    } catch (error) {
+      console.error("Error generating component by AI", error);
+    } finally {
+      setIsGenerating(false);
+    }
+
+// 以下の情報もプロンプトに入れてたけど、精度がいまいちなのでやめた
+// ## モックアップコード
+// \`\`\`tsx
+// ${generateSampleComponent(selectedNodes[0])}
+// \`\`\`
 
   }
 
@@ -247,9 +300,28 @@ export default ${componentName};`;
         {renderSvgPreview(svgString)}
       </div>
       <div>
-        <h3>生成したReactコンポーネント</h3>
+        <h3>Reactコンポーネントを生成</h3>
         <button onClick={generateReactComponentByAI}>生成</button>
       </div>
+      {isGenerating && <div style={{ marginTop: '20px' }}>生成中...</div>}
+      {generatedComponentByAI && (
+        <div>
+          <h3>生成したReactコンポーネント</h3>
+        <pre style={{ 
+          whiteSpace: 'pre-wrap', 
+          wordBreak: 'break-word',
+          backgroundColor: '#f5f5f5',
+          padding: '10px',
+          borderRadius: '4px',
+          marginTop: '10px',
+          overflow: 'auto',
+          height: '500px',
+          textAlign: 'left'
+        }}>
+          {generatedComponentByAI}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
