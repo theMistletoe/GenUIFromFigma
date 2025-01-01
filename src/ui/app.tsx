@@ -14,6 +14,7 @@ interface StyleNode {
 function App() {
   const [selectedNodes, setSelectedNodes] = useState<DetailedNodeInfo[]>([]);
   const [svgString, setSvgString] = useState<string | undefined>(undefined);
+  const [componentName, setComponentName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
 
@@ -149,6 +150,10 @@ export default ${componentName};`;
 
     return (
       <div>
+
+        <h2>生成したいUI部品:</h2>
+        <input type="text" value={componentName} onChange={(e) => setComponentName(e.target.value)} />
+
         <h3>選択されたノード:</h3>
         {selectedNodes.map((node) => (
           <div key={node.id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc' }}>
