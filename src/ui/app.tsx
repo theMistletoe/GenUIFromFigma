@@ -88,59 +88,45 @@ export default ${componentName};`;
 
     // ノードをStyleNode形式に変換する再帰的な関数
     const convertNodeToStyleNode = (node: DetailedNodeInfo): StyleNode => {
+      // CSSプロパティをReactスタイルに変換する関数
+      const convertCssToReactStyle = (cssProps: Record<string, string | number>) => {
+        return Object.entries(cssProps).reduce((acc, [key, value]) => {
+          // ケバブケースをキャメルケースに変換
+          const reactKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+          
+          // 特定のプロパティの値を変換
+          let reactValue = value;
+          
+          // pxやemなどの単位が含まれる文字列の場合はそのまま使用
+          if (typeof value === 'string' && !value.match(/^-?\d+\.?\d*(px|em|rem|%|vh|vw)$/)) {
+            // 数値のみの文字列の場合は数値に変換
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) {
+              reactValue = numValue;
+            }
+          }
+
+          return {
+            ...acc,
+            [reactKey]: reactValue
+          };
+        }, {});
+      };
+
       const styleNode: StyleNode = {
         styles: {
-          width: `${node.width}px`,
-          height: `${node.height}px`,
-          position: 'relative',
-          // 背景色の処理を改善
-          backgroundColor: (typeof node.fills !== 'symbol' && node.fills?.[0]?.type === 'SOLID' && node.fills[0].color?.toString()) || 'transparent',
-          // 不透明度の追加
-          opacity: typeof node.opacity !== 'symbol' ? node.opacity : 1,
-          // 回転の追加
-          transform: typeof node.rotation !== 'symbol' ? `rotate(${node.rotation}deg)` : 'none',
-          // ボーダーの処理を改善
-          ...(typeof node.strokes !== 'symbol' && node.strokes && node.strokes.length > 0 && node.strokeWeight && {
-            border: `${String(node.strokeWeight)}px ${String(node.strokeAlign) || 'center'} ${node.strokes[0].color?.toString()}`,
-          }),
-          // 角丸の処理を改善
-          ...(node.cornerRadius && typeof node.cornerRadius !== 'symbol' && {
-            borderRadius: Array.isArray(node.cornerRadius) 
-              ? `${node.cornerRadius.join('px ')}px`
-              : `${String(node.cornerRadius)}px`
-          }),
-          // パディングの追加
-          ...(node.paddingTop && { paddingTop: `${node.paddingTop}px` }),
-          ...(node.paddingRight && { paddingRight: `${node.paddingRight}px` }),
-          ...(node.paddingBottom && { paddingBottom: `${node.paddingBottom}px` }),
-          ...(node.paddingLeft && { paddingLeft: `${node.paddingLeft}px` }),
-          // 配置関連のスタイル
-          ...(node.layoutMode && {
-            display: 'flex',
-            flexDirection: node.layoutMode === 'HORIZONTAL' ? 'row' : 'column',
-            gap: node.itemSpacing ? `${node.itemSpacing}px` : '0',
-            justifyContent: node.primaryAxisAlignItems || 'flex-start',
-            alignItems: node.counterAxisAlignItems || 'flex-start',
-          }),
-          // ブレンドモードの追加
-          mixBlendMode: node.blendMode?.toLowerCase() || 'normal',
-          // 表示・非表示の制御
-          display: node.visible === false ? 'none' : 'block',
+          // width: `${node.width}px`,
+          // height: `${node.height}px`,
+          // opacity: node.opacity,
+          // cssInfosをReactスタイルに変換して適用
+          ...(node.cssInfos ? convertCssToReactStyle(node.cssInfos) : {}),
         },
         type: node.type
       };
 
-      // テキストノードの処理を追加
+      // テキストノードの処理
       if (node.type === 'TEXT' && node.characters) {
         styleNode.content = node.characters;
-        // テキストのスタイルを追加
-        styleNode.styles = {
-          ...styleNode.styles,
-          fontSize: typeof node.fontSize !== 'symbol' && node.fontSize ? `${String(node.fontSize)}px` : 'inherit',
-          fontFamily: typeof node.fontName !== 'symbol' && node.fontName ? String(node.fontName) : 'inherit',
-          fontWeight: 'normal',
-          color: typeof node.fills !== 'symbol' && node.fills?.[0]?.type === 'SOLID' ? node.fills[0].color?.toString() : 'inherit',
-        };
       }
 
       // SVGプレビューが利用可能な場合
