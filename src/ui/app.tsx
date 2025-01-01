@@ -151,9 +151,6 @@ export default ${componentName};`;
     return (
       <div>
 
-        <h2>生成したいUI部品:</h2>
-        <input type="text" value={componentName} onChange={(e) => setComponentName(e.target.value)} />
-
         <h3>選択されたノード:</h3>
         {selectedNodes.map((node) => (
           <div key={node.id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc' }}>
@@ -195,6 +192,13 @@ export default ${componentName};`;
 
   return (
     <div className="homepage">
+      {selectedNodes.length > 0 && (
+        <div>
+          <h2>生成したいUI部品:</h2>
+          <input type="text" value={componentName} onChange={(e) => setComponentName(e.target.value)} />
+        </div>
+      )}
+
       <div style={{ marginTop: '20px', textAlign: 'left' }}>
         {renderSelectionInfo()}
       </div>
