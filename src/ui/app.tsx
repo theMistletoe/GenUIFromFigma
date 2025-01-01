@@ -207,20 +207,25 @@ export default ${componentName};`;
   };
 
   async function generateReactComponentByAI() {
-    if (!openAIToken) return window.alert("OpenAI API Tokenが設定されていません。");
+    if (!openAIToken) return window.alert("Anthropic API Tokenが設定されていません。");
     if (!componentName) return window.alert("コンポーネント名が設定されていません。");
     
     setIsGenerating(true);
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${openAIToken}`,
+          "x-api-key": openAIToken,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true" // CORSエラー: https://github.com/vercel/ai/issues/3041
         },
         body: JSON.stringify({
-          model: "o1-preview",
-          messages: [{ role: "user", content: `
+          model: "claude-3-5-sonnet-20241022",
+          max_tokens: 8000,
+          messages: [{
+            role: "user",
+            content: `
 # 要望
 
 - FigmaでデザインしたコンポーネントをReact/TypeScriptでそのまま利用できる動作するコードを出力してください。
@@ -231,16 +236,13 @@ Figmaから出力した情報を以下の通り提示します。
 
 ## 作成したいコンポーネント
 
-
 ${componentName}
-
 
 ## デザイン・見た目
 
 \`\`\`svg
 ${svgString}
 \`\`\`
-
 
 ## 構成ノード情報
 
@@ -254,13 +256,13 @@ ${JSON.stringify(selectedNodes, null, 2)}
 - 出力するコードにはReact/TypeScriptのみを使用してください。
 - 出力するコードはsvgによる見た目、及び提供する構成ノード情報のcssInfosを分析しながら、正確にデザインを再現してください。
 - 結果については生成したコード部分のみを出力してください。\`\`\`などのコードブロックは出力しないでください。これは絶対です。
-
-          ` }],
+`
+          }]
         }),
       });
 
       const data = await response.json();
-      setGeneratedComponentByAI(data.choices[0].message.content);
+      setGeneratedComponentByAI(data.content[0].text);
     } catch (error) {
       console.error("Error generating component by AI", error);
     } finally {
