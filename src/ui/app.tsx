@@ -234,9 +234,15 @@ export default ${componentName};`;
 
 Figmaから出力した情報を以下の通り提示します。
 
-## 作成したいコンポーネント
+## 作成したいUIコンポーネント部品
 
 ${componentName}
+
+## モックアップコード
+
+\`\`\`tsx
+${generateSampleComponent(selectedNodes[0])}
+\`\`\`
 
 ## デザイン・見た目
 
