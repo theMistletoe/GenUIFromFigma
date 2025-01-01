@@ -48,3 +48,19 @@ PLUGIN_CHANNEL.registerMessageHandler("selectionChange", (nodeInfos: DetailedNod
 PLUGIN_CHANNEL.registerMessageHandler("svgPreview", (svgString: string) => {
   return svgString;
 });
+PLUGIN_CHANNEL.registerMessageHandler("saveOpenAIToken", (token: string) => {
+  console.log("saveOpenAIToken", token);
+  figma.clientStorage.setAsync("openAIToken", token);
+  return token;
+});
+PLUGIN_CHANNEL.registerMessageHandler("getOpenAIToken", () => {
+  figma.clientStorage.getAsync("openAIToken").then((token) => {
+    console.log("getOpenAIToken", token);
+    // string に型をバリデーションする
+    if (typeof token !== "string") {
+      throw new Error("token is not a string");
+    }
+    PLUGIN_CHANNEL.emit(UI, "getOpenAIToken", [token]);
+    return token;
+  });
+});

@@ -6,6 +6,8 @@ export const UI = Networker.createSide("UI-side").listens<{
   hello(text: string): void;
   selectionChange(nodeInfos: DetailedNodeInfo[]): void;
   svgPreview(svgString: string): void;
+  saveOpenAIToken(token: string): void;
+  getOpenAIToken(token: string): void;
 }>();
 
 export const PLUGIN = Networker.createSide("Plugin-side").listens<{
@@ -14,4 +16,6 @@ export const PLUGIN = Networker.createSide("Plugin-side").listens<{
   createRect(width: number, height: number): void;
   selectionChange(nodeInfos: DetailedNodeInfo[]): void;
   svgPreview(svgString: string): void;
+  saveOpenAIToken(token: string): void;
+  getOpenAIToken(): void;
 }>();

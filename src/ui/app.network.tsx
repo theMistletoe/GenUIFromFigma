@@ -53,3 +53,9 @@ UI_CHANNEL.registerMessageHandler("selectionChange", (nodeInfos: DetailedNodeInf
 UI_CHANNEL.registerMessageHandler("svgPreview", (svgString: string) => {
   // 空の実装で問題ありません
 });
+UI_CHANNEL.registerMessageHandler("saveOpenAIToken", (token: string) => {
+  // 空の実装で問題ありません
+});
+UI_CHANNEL.registerMessageHandler("getOpenAIToken", (token: string) => {
+  // 空の実装で問題ありません
+});

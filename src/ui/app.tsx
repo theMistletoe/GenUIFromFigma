@@ -1,7 +1,7 @@
 import { DetailedNodeInfo, UI_CHANNEL } from "@ui/app.network";
 import { useEffect, useState } from "react";
-
 import "@ui/styles/main.scss";
+import { PLUGIN } from "@common/networkSides";
 
 interface StyleNode {
   styles: Record<string, string | number | undefined>;
@@ -15,6 +15,7 @@ function App() {
   const [selectedNodes, setSelectedNodes] = useState<DetailedNodeInfo[]>([]);
   const [svgString, setSvgString] = useState<string | undefined>(undefined);
   const [componentName, setComponentName] = useState<string | undefined>(undefined);
+  const [openAIToken, setOpenAIToken] = useState<string | undefined>(undefined);
 
   useEffect(() => {
 
@@ -25,6 +26,13 @@ function App() {
     UI_CHANNEL.subscribe("svgPreview", (svgString: string) => {
       setSvgString(svgString);
     });
+
+    UI_CHANNEL.subscribe("getOpenAIToken", (token: string) => {
+      console.log("XXXXXXXXXXXXXXXX", token);
+      setOpenAIToken(token);
+    });
+
+    UI_CHANNEL.request(PLUGIN, "getOpenAIToken", []);
   }, []);
 
   const generateReactComponent = (componentName: string, nodes: StyleNode[]): string => {
@@ -190,8 +198,20 @@ export default ${componentName};`;
     );
   }
 
+  function saveOpenAIToken () {
+    if (!openAIToken) return;
+    UI_CHANNEL.request(PLUGIN, "saveOpenAIToken", [openAIToken]);
+  };
+
   return (
     <div className="homepage">
+
+      <div>
+        <h2>OpenAI API Token:</h2>
+        <input type="text" value={openAIToken} onChange={(e) => setOpenAIToken(e.target.value)} />
+        <button onClick={saveOpenAIToken}>トークンを保存</button>
+      </div>
+
       {selectedNodes.length > 0 && (
         <div>
           <h2>生成したいUI部品:</h2>
