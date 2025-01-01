@@ -90,19 +90,35 @@ export default ${componentName};`;
     const convertNodeToStyleNode = (node: DetailedNodeInfo): StyleNode => {
       // CSSプロパティをReactスタイルに変換する関数
       const convertCssToReactStyle = (cssProps: Record<string, string | number>) => {
+        console.log("cssProps", cssProps);
         return Object.entries(cssProps).reduce((acc, [key, value]) => {
-          // ケバブケースをキャメルケースに変換
           const reactKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
           
-          // 特定のプロパティの値を変換
           let reactValue = value;
           
-          // pxやemなどの単位が含まれる文字列の場合はそのまま使用
-          if (typeof value === 'string' && !value.match(/^-?\d+\.?\d*(px|em|rem|%|vh|vw)$/)) {
-            // 数値のみの文字列の場合は数値に変換
-            const numValue = parseFloat(value);
-            if (!isNaN(numValue)) {
-              reactValue = numValue;
+          if (typeof value === 'string') {
+            // コメント内の相対単位を優先するプロパティ
+            const relativeUnitsProps = ['line-height', 'font-size', 'letter-spacing'];
+            
+            if (relativeUnitsProps.includes(key) && value.includes('/*')) {
+              const relativeMatch = value.match(/\/\*\s*([^*]+)\s*\*\//);
+              if (relativeMatch) {
+                reactValue = relativeMatch[1].trim();
+                return { ...acc, [reactKey]: reactValue };
+              }
+            }
+
+            // その他のプロパティの処理
+            const actualValue = value.split(/\s*\/\*/)[0].trim();
+            if (!actualValue.match(/^-?\d+\.?\d*(px|em|rem|%|vh|vw)$/)) {
+              const numValue = parseFloat(actualValue);
+              if (!isNaN(numValue)) {
+                reactValue = numValue;
+              } else {
+                reactValue = actualValue;
+              }
+            } else {
+              reactValue = actualValue;
             }
           }
 
@@ -115,13 +131,10 @@ export default ${componentName};`;
 
       const styleNode: StyleNode = {
         styles: {
-          // width: `${node.width}px`,
-          // height: `${node.height}px`,
-          // opacity: node.opacity,
-          // cssInfosをReactスタイルに変換して適用
           ...(node.cssInfos ? convertCssToReactStyle(node.cssInfos) : {}),
         },
-        type: node.type
+        type: node.type,
+        content: node.characters,
       };
 
       // テキストノードの処理
@@ -130,9 +143,11 @@ export default ${componentName};`;
       }
 
       // SVGプレビューが利用可能な場合
-      if (svgString && node.type === 'VECTOR') {
-        styleNode.svg = svgString;
-      }
+      // if (node.type === 'VECTOR' || node.type === 'STAR' || node.type === 'LINE' || 
+      //   node.type === 'ELLIPSE' || node.type === 'POLYGON' || 
+      //   node.type === 'RECTANGLE' || node.type === 'BOOLEAN_OPERATION') {
+      //     node.
+      // }
 
       // 子ノードが存在する場合、再帰的に処理
       if (node.children && node.children.length > 0) {
@@ -154,7 +169,7 @@ export default ${componentName};`;
     return (
       <div>
         <h3>選択されたノード:</h3>
-        {selectedNodes.map((node, index) => (
+        {selectedNodes.map((node) => (
           <div key={node.id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc' }}>
             <h4>ノード情報:</h4>
             <pre style={{ 
@@ -166,7 +181,7 @@ export default ${componentName};`;
             }}>
               {JSON.stringify(node, null, 2)}
             </pre>
-            
+
             <h4>サンプルReactコンポーネント:</h4>
             <pre style={{ 
               whiteSpace: 'pre-wrap', 
