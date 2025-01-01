@@ -30,6 +30,7 @@ export type DetailedNodeInfo = {
   cornerRadius?: number | symbol;
   fontSize?: number | symbol;
   fontName?: FontName | symbol;
+  svg?: string;
 };
 
 export const UI_CHANNEL = UI.channelBuilder()

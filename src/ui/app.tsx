@@ -44,10 +44,9 @@ function App() {
   const generateReactComponent = (componentName: string, nodes: StyleNode[]): string => {
     const generateTSXForNode = (node: StyleNode, index: number): string => {
       if (node.svg) {
-        return `<div 
-          style={${JSON.stringify(node.styles)}}
-          dangerouslySetInnerHTML={{ __html: \`${node.svg}\` }}
-        />`;
+        return `<div style={${JSON.stringify(node.styles)}}>
+          ${node.svg}
+        </div>`;
       }
 
       if (node.content) {
@@ -142,11 +141,9 @@ export default ${componentName};`;
       }
 
       // SVGプレビューが利用可能な場合
-      // if (node.type === 'VECTOR' || node.type === 'STAR' || node.type === 'LINE' || 
-      //   node.type === 'ELLIPSE' || node.type === 'POLYGON' || 
-      //   node.type === 'RECTANGLE' || node.type === 'BOOLEAN_OPERATION') {
-      //     node.
-      // }
+      if (node.type === 'VECTOR') {
+          styleNode.svg = node.svg;
+      }
 
       // 子ノードが存在する場合、再帰的に処理
       if (node.children && node.children.length > 0) {

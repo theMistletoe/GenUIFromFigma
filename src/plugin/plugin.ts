@@ -39,7 +39,8 @@ async function bootstrap() {
       height: node.height,
       rotation: 'rotation' in node ? node.rotation : 0,
       opacity: 'opacity' in node ? node.opacity : 1,
-      cssInfos: await node.getCSSAsync()
+      cssInfos: await node.getCSSAsync(),
+      svg: await node.exportAsync({ format: 'SVG_STRING' }) || undefined,
     };
 
     // 子要素を持つノードタイプの場合、再帰的に情報を取得
