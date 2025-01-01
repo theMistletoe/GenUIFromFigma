@@ -12,12 +12,8 @@ interface StyleNode {
 }
 
 function App() {
-
   const [selectedNodes, setSelectedNodes] = useState<DetailedNodeInfo[]>([]);
   const [svgString, setSvgString] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    console.log("selectedNodes", selectedNodes);
-  }, [selectedNodes]);
 
   useEffect(() => {
 
