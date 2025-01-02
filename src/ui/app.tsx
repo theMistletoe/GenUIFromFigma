@@ -18,6 +18,7 @@ function App() {
   const [openAIToken, setOpenAIToken] = useState<string | undefined>(undefined);
   const [generatedComponentByAI, setGeneratedComponentByAI] = useState<string | undefined>(undefined);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -276,8 +277,115 @@ ${JSON.stringify(selectedNodes, null, 2)}
     }
   }
 
+  const renderGeneratedComponentPreview = () => {
+    if (!generatedComponentByAI) return null;
+    if (!componentName) return null;
+
+    const convertImports = (code: string): string => {
+      // React関連の分割代入を含むimport文を解析して必要な部分を抽出
+      const reactImports = new Set<string>();
+      code.replace(
+        /import\s+(?:React,\s*)?{([^}]+)}\s+from\s+['"]react['"];?/g,
+        (_, imports: string) => {
+          imports.split(',').forEach((item: string) => {
+            reactImports.add(item.trim());
+          });
+          return '';
+        }
+      );
+
+      // 既存のReact関連のimport文を削除
+      const codeWithoutReactImports = code.replace(
+        /import\s+(?:React,\s*)?{[^}]+}\s+from\s+['"]react['"];?\s*|import\s+(?:React|\*\s+as\s+React)\s+from\s+['"]react['"];?\s*/g,
+        ''
+      );
+
+      // その他のnpmパッケージのimportを変換
+      const convertedCode = codeWithoutReactImports.replace(
+        /import\s+(?:{[^}]*}|\*\s+as\s+[^,]*|[^,{]*)\s+from\s+['"]([^'"]+)['"]/g,
+        (match, packageName) => {
+          if (!packageName.startsWith('.') && !packageName.startsWith('/')) {
+            return match.replace(packageName, `https://esm.sh/${packageName}`);
+          }
+          return match;
+        }
+      );
+
+      // 必要なReactのimport文を構築
+      const reactImportStatement = reactImports.size > 0
+        ? `import React, { ${Array.from(reactImports).join(', ')} } from "https://esm.sh/react@17";`
+        : 'import React from "https://esm.sh/react@17";';
+
+      return `
+        ${reactImportStatement}
+        import ReactDOM from "https://esm.sh/react-dom@17";
+
+        ${convertedCode}
+      `;
+    };
+
+    const convertedCode = convertImports(generatedComponentByAI);
+    console.log("convertedCode:\n", convertedCode);
+
+    const previewHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+          <script>
+            // TypeScript用のpresetを登録
+            Babel.registerPreset('tsx', {
+              presets: [
+                [Babel.availablePresets['typescript'], 
+                  { allExtensions: true, isTSX: true }
+                ]
+              ],
+            });
+          </script>
+        </head>
+        <body>
+          <div id="root"></div>
+          <script type="text/babel" data-type="module" data-presets="tsx,react">
+            ${convertedCode}
+            
+            // コンポーネントをレンダリング
+            ReactDOM.render(
+              React.createElement(${componentName}),
+              document.getElementById('root')
+            );
+          </script>
+        </body>
+      </html>
+    `;
+
+    return (
+      <div style={{ border: '1px solid #ccc', padding: '20px', marginTop: '20px' }}>
+        <h3>プレビュー</h3>
+        <iframe
+          srcDoc={previewHTML}
+          style={{ width: '100%', height: '500px', border: 'none' }}
+          sandbox="allow-scripts"
+        />
+      </div>
+    );
+  };
+
+  function handleReset() {
+    setSelectedNodes([]);
+    setSvgString(undefined);
+    setComponentName(undefined);
+    setGeneratedComponentByAI(undefined);
+    setIsGenerating(false);
+    setIsPreviewMode(false);
+  }
+
+
   return (
     <div className="homepage">
+
+      <div>
+        <button onClick={handleReset}>リセット</button>
+      </div>
 
       <div>
         <h2>OpenAI API Token:</h2>
@@ -307,19 +415,26 @@ ${JSON.stringify(selectedNodes, null, 2)}
       {generatedComponentByAI && (
         <div>
           <h3>生成したReactコンポーネント</h3>
-        <pre style={{ 
-          whiteSpace: 'pre-wrap', 
-          wordBreak: 'break-word',
-          backgroundColor: '#f5f5f5',
-          padding: '10px',
-          borderRadius: '4px',
-          marginTop: '10px',
-          overflow: 'auto',
-          height: '500px',
-          textAlign: 'left'
-        }}>
-          {generatedComponentByAI}
-          </pre>
+          <button onClick={() => setIsPreviewMode(!isPreviewMode)}>
+            {isPreviewMode ? 'コードを表示' : 'プレビューを表示'}
+          </button>
+          {isPreviewMode ? (
+            renderGeneratedComponentPreview()
+          ) : (
+            <pre style={{ 
+              whiteSpace: 'pre-wrap', 
+              wordBreak: 'break-word',
+              backgroundColor: '#f5f5f5',
+              padding: '10px',
+              borderRadius: '4px',
+              marginTop: '10px',
+              overflow: 'auto',
+              height: '500px',
+              textAlign: 'left'
+            }}>
+              {generatedComponentByAI}
+            </pre>
+          )}
         </div>
       )}
     </div>
