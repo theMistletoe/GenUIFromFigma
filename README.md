@@ -1,3 +1,10 @@
+
+
+# sample usage
+
+![mount movie](./movies/sample_movie.gif)
+
+
 <!-- Logo -->
 <p align="center">
   <img src="https://raw.githubusercontent.com/CoconutGoodie/figma-plugin-react-vite/master/.github/assets/logo.png" height="100px" alt="Logo"/>
